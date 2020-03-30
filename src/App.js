@@ -220,6 +220,7 @@ class App extends React.Component {
             return position !== i;
         });
         this.setState((state, props) => ({cartPositions: newList}));
+        this.storeCartPositions(newList);
     }
 
     incrementCartPosition(i) {
