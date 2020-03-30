@@ -3,6 +3,7 @@ import './App.css';
 import MenuCategoryList from './common.blocks/menu-category-list/menu-category-list';
 import MenuPositionList from "./common.blocks/menu-position-list/menu-position-list";
 import Cart from "./common.blocks/cart/cart";
+import Modal from "./common.blocks/modal/modal";
 
 
 class App extends React.Component {
@@ -17,12 +18,30 @@ class App extends React.Component {
             activeCategoryId: null,
             positions: [],
             positionsPage: 1,
-            cartPositions: []
+            cartPositions: this.getStoredCartPositions(),
+            orderCompleted: false,
+            lastOrderToken: "",
+            modalVisible: false,
+            modalContent: "",
         };
 
         this.onAddToCart = this.onAddToCart.bind(this);
         this.onOrderStart = this.onOrderStart.bind(this);
         this.removeCartPosition = this.removeCartPosition.bind(this);
+        this.decrementCartPosition = this.decrementCartPosition.bind(this);
+        this.incrementCartPosition = this.incrementCartPosition.bind(this);
+        this.onConfirmOrder = this.onConfirmOrder.bind(this);
+        this.onOrderCompleted = this.onOrderCompleted.bind(this);
+        this.commonModalClose = this.commonModalClose.bind(this);
+    }
+
+    getStoredCartPositions() {
+        let positions = localStorage.getItem('cart.positions');
+        return positions ? JSON.parse(positions) : [];
+    }
+
+    storeCartPositions(positions) {
+        localStorage.setItem('cart.positions', JSON.stringify(positions));
     }
 
     componentDidMount() {
@@ -88,10 +107,95 @@ class App extends React.Component {
         this.setState((state, props) => ({activeCategoryId: value}));
     }
 
+    getPositionIndex(position, options) {
+        return position.id + '<>'
+            + options.map((option) => (option.option_id + ":" + option.value)).join('<>');
+    }
+
+    onFullCart(position, options) {
+        //say something to user about cart is full
+    }
+
+    onConfirmOrder(idempotencyKey, positions, address, phone) {
+        console.log(idempotencyKey, positions, address, phone);
+        positions = positions.map(function (position) {
+            return {
+                id: position.position.id,
+                count: position.count,
+                options: position.options
+                    .filter((option) => (option))
+                    .map((option) => ({id: option.option_id, value: option.value}))
+            };
+        })
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Idempotency-key': idempotencyKey},
+            body: JSON.stringify({
+                positions: positions,
+                address: address,
+                phone: "+" + phone //support rfc
+            })
+        };
+        fetch(this.state.apiEndpoint + '/orders', requestOptions)
+            .then(response => response.json())
+            .then(data => this.onOrderCompleted(data.data.token));
+    }
+
+    onOrderCompleted(token) {
+        this.setState((state, props) => ({
+            orderCompleted: true,
+            lastOrderToken: token,
+            cartPositions: [],
+        }));
+        this.storeCartPositions([]);
+        this.showModal(<div>
+            <h2 className="no-margin-header">Thank you!</h2>
+            <div className="green-text">Your order is created.</div>
+            <br/>
+            Manager will call you to confirm your order.
+            <br/><br/>
+        </div>);
+    }
+
+    showModal(content) {
+        this.setState((state, props) => ({
+            modalVisible: true,
+            modalContent: content,
+        }));
+    }
+
     onAddToCart(e, position, options) {
+        if (this.state.cartPositions.length > 99) {
+            this.onFullCart(position, options);
+            return;
+        }
+
         let positions = this.state.cartPositions;
-        positions.push({position: position, options: options});
-        this.setState((state, props) => ({cartPositions: positions}));
+        let index = this.getPositionIndex(position, options);
+
+        let incremented = false;
+        let updated = false;
+        positions.map((item) => {
+            if (item.index === index) {
+                if (item.count < 100) {
+                    item.count++;
+                    updated = true;
+                } else {
+                    this.onFullCart(position, options);
+                }
+                incremented = true;
+            }
+            return item;
+        });
+        if (!incremented) {
+            updated = true;
+            positions.push({index: index, position: position, options: options, count: 1});
+        }
+
+        if (updated) {
+            this.storeCartPositions(positions);
+            this.setState((state, props) => ({cartPositions: positions}));
+        }
     }
 
     onOrderStart() {
@@ -108,10 +212,34 @@ class App extends React.Component {
     }
 
     removeCartPosition(i) {
-        let newList = this.state.cartPositions.filter((item,position) => {
+        let newList = this.state.cartPositions.filter((item, position) => {
             return position !== i;
         });
         this.setState((state, props) => ({cartPositions: newList}));
+    }
+
+    incrementCartPosition(i) {
+        let newList = this.state.cartPositions.map((item, position) => {
+            if (position === i && item.count < 100)
+                item.count++;
+            return item;
+        });
+        this.storeCartPositions(newList);
+        this.setState((state, props) => ({cartPositions: newList}));
+    }
+
+    decrementCartPosition(i) {
+        let newList = this.state.cartPositions.map((item, position) => {
+            if (position === i && item.count > 1)
+                item.count--;
+            return item;
+        });
+        this.storeCartPositions(newList);
+        this.setState((state, props) => ({cartPositions: newList}));
+    }
+
+    commonModalClose() {
+        this.setState((state, props) => ({modalVisible: false, modalContent: ''}));
     }
 
     render() {
@@ -123,6 +251,9 @@ class App extends React.Component {
                 <Cart onClick={this.onOrderStart}
                       optionsGroups={this.state.options}
                       removePosition={this.removeCartPosition}
+                      onConfirmOrder={this.onConfirmOrder}
+                      decrementPosition={this.decrementCartPosition}
+                      incrementPosition={this.incrementCartPosition}
                       positions={this.state.cartPositions}/>
                 <div className="App-container">
                     <div className="App-container__wrapper">
@@ -146,6 +277,11 @@ class App extends React.Component {
                         </div>
                     </div>
                 </div>
+
+                <Modal modalId="commonModal"
+                       visible={this.state.modalVisible}
+                       onClose={this.commonModalClose}
+                       text={this.state.modalContent}/>
             </div>
         );
     }
