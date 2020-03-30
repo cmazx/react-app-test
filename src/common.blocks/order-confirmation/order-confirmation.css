@@ -1,0 +1,174 @@
+.order-confirmation__wrapper {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.order-confirmation__wrapper.active {
+    display: block;
+}
+
+.order-confirmation__modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: max-content;
+}
+
+.order-confirmation__close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: -10px;
+}
+.order-confirmation__remove{
+    color: darkred;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: -10px;
+    margin-left: 5px;
+}
+.order-confirmation__close:hover,
+.order-confirmation__close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.order-confirmation__close:hover,
+.order-confirmation__close:focus,
+.order-confirmation__remove:hover,
+.order-confirmation__remove:focus {
+    color: indianred;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.order-confirmation__order_button {
+    border: 1px solid #009471;
+    background-color: #009471;
+    padding: 5px;
+    border-radius: 0px 0px 10px 10px;
+    color: white;
+    cursor: pointer;
+}
+
+.order-confirmation__order_button:hover {
+    border: 1px solid #009471;
+    background-color: #00af8a;
+}
+
+.order-confirmation__list_header {
+    margin-top: 0px;
+}
+
+.order-confirmation__list__position_image, order-confirmation__list__position_info {
+    display: inline-block;
+    pading: 2px 10px;
+}
+
+.order-confirmation__list__position_image img {
+    height: 64px;
+}
+
+.order-confirmation__list__position {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+}
+
+.order-confirmation__list__position_info {
+    text-align: left;
+    padding: 0px 5px;
+}
+
+.order-confirmation__confirm_order_button {
+    border: 1px solid #009471;
+    background-color: #009471;
+    padding: 5px;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+}
+
+.order-confirmation__confirm_order_button:hover {
+    border: 1px solid #009471;
+    background-color: #00af8a;
+}
+
+.order-confirmation__list__position_price {
+    margin-left: auto;
+    padding-left: 20px;
+}
+
+.order-confirmation__list__position_count {
+    display: flex;
+    flex-display: row;
+    align-items: flex-start;
+    margin-right: 5px;
+}
+
+.order-confirmation__contacts__field__label {
+    width: 100px;
+    display: inline-block;
+    text-align: right;
+    padding-right: 5px;
+    align-self: flex-start;
+}
+
+.order-confirmation__contacts__field__requirements {
+    display: none;
+    font-size: 11px;
+    color: red;
+}
+
+.validation_error .order-confirmation__contacts__field__requirements {
+    display: block;
+}
+
+.field_wrapper {
+    display: inline-block;
+    width: 180px;
+}
+
+.order-confirmation__contacts__field {
+    display: flex;
+}
+
+.order-confirmation__list__count__count {
+    color: #009471;
+}
+.order-confirmation__list__count{
+    display: flex;
+}
+
+.order-confirmation__list__count__multiplier {
+    display: inline-block;
+    margin-top: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.order-confirmation__list__count__quantity-wrapper {
+    display: inline;
+}
+
+.order-confirmation__list__count__decrementor, .order-confirmation__list__count__incrementor {
+    color: #009471;
+    cursor: pointer;
+    user-select: none;
+}
+
+.order-confirmation__list__count__decrementor.hidden, .order-confirmation__list__count__incrementor.hidden {
+    opacity: 0;
+}

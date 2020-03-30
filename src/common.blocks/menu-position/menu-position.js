@@ -26,7 +26,6 @@ class MenuPosition extends React.Component {
     }
 
     addToCart(e) {
-        console.log('???', this.state.selectedOptions);
         this.props.onAddToCart(
             e.target,
             this.props.position,
@@ -44,6 +43,14 @@ class MenuPosition extends React.Component {
 
     onInfoBlur() {
         this.setState((state, props) => ({focused: false}));
+    }
+
+    renderPrice() {
+        let price = parseFloat(this.props.position.price);
+        this.state.selectedOptions.forEach((item) => {
+            price += parseFloat(item.addPrice);
+        })
+        return price.toFixed(2);
     }
 
     getGroupedOptions() {
@@ -95,7 +102,7 @@ class MenuPosition extends React.Component {
                 })}
                 <div className={this.state.componentClassName + "__info_column__purchase"}>
                     <div className={this.state.componentClassName + "__info_column__price"}>
-                        {this.props.position.price} EUR
+                        {this.renderPrice()} EUR
                     </div>
                     <Button onClick={this.addToCart} text="Add"/>
                 </div>
